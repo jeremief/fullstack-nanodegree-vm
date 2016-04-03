@@ -13,14 +13,31 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("delete from matches;")
+    conn.commit()
+    conn.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("delete from players;")
+    conn.commit()
+    conn.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute ("select count(*) from players;")
+    query_result = cur.fetchall()
+    answer = query_result[0][0]
+    conn.close()
+    return answer
 
 
 def registerPlayer(name):
@@ -32,6 +49,11 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute ("INSERT INTO players (name) VALUES (%s);", (name,))
+    conn.commit()
+    conn.close()
 
 
 def playerStandings():
@@ -47,6 +69,16 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("select * from standings;")
+    query_result = cur.fetchall()
+    # standings = ({'id': int(row[0]), 'name': str(row[1]), 'wins': int(row[2][0]), 'matches': int(row[3][0])}
+    #          for row in query_result)
+    # standings = list((int(row[0]), str(row[1]), int(row[2]), int(row[3][0])
+    #          for row in query_result))
+    conn.close()
+    return query_result
 
 
 def reportMatch(winner, loser):
@@ -56,6 +88,11 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO matches (player_one_id, player_two_id, match_winner) VALUES (%s, %s, %s);",(winner, loser, winner,))
+    conn.commit()
+    conn.close()
  
  
 def swissPairings():
@@ -73,5 +110,24 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    conn = connect()
+    cur = conn.cursor()
+    query_result = cur.execute("select count(*) from players;")
+    num_players = cur.fetchall()
+    num_players = num_players[0][0]
+    num_matches = num_players / 2
+    current_match = 1
+    offset_value = 0
+    matches_list = []
+    while current_match <= num_matches:
+        query_result = cur.execute("select player_id, name from standings limit 2 offset (%s);",(offset_value,))
+        temp_result_two_tuples = cur.fetchall()
+        temp_result_one_tuple = temp_result_two_tuples[0] + temp_result_two_tuples[1]
+        matches_list.append(temp_result_one_tuple)
+        current_match += 1
+        offset_value += 2
+    conn.close()
+
+    return matches_list
 
 
