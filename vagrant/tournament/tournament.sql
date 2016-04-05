@@ -6,15 +6,17 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
+-- First making sure that we are getting new tables every time by deleting 
+-- existing ones
 drop table if exists players cascade;
 drop table if exists matches cascade;
 
-
+-- Then we create the two tables that will be used 
 create table players (player_id serial primary key, name text);
 create table matches (match_id serial primary key, player_one_id integer references players(player_id), 
 	player_two_id integer references players(player_id), match_winner integer references players(player_id));
 
-
+-- Finally, we create all the views that will be used in the queries
 create view wins as 
 	select players.player_id as winner, count(matches.match_winner) as wins
 	from players left join matches
