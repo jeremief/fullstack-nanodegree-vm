@@ -17,6 +17,7 @@ create table matches (match_id serial primary key, player_one_id integer referen
 	player_two_id integer references players(player_id), match_winner integer references players(player_id));
 
 -- Finally, we create all the views that will be used in the queries
+-- stored in tournament.py
 create view wins as 
 	select players.player_id as winner, count(matches.match_winner) as wins
 	from players left join matches
