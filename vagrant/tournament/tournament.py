@@ -73,10 +73,6 @@ def playerStandings():
     cur = conn.cursor()
     cur.execute("select * from standings;")
     query_result = cur.fetchall()
-    # standings = ({'id': int(row[0]), 'name': str(row[1]), 'wins': int(row[2][0]), 'matches': int(row[3][0])}
-    #          for row in query_result)
-    # standings = list((int(row[0]), str(row[1]), int(row[2]), int(row[3][0])
-    #          for row in query_result))
     conn.close()
     return query_result
 
