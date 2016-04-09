@@ -5,8 +5,15 @@
 -- 
 -- You can write comments in this file by starting them with two dashes, like 
 -- these lines here. 
--- First making sure that we are getting new tables every time by deleting  
+-- First making sure that we are getting a new database and new tables every time by deleting  
 -- existing ones 
+
+DROP DATABASE IF EXISTS tournament;
+
+CREATE DATABASE tournament;
+
+\c tournament;
+
 DROP TABLE IF EXISTS players CASCADE; 
 
 DROP TABLE IF EXISTS matches CASCADE; 
