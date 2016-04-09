@@ -1,54 +1,80 @@
--- Table definitions for the tournament project.
---
--- Put your SQL 'create table' statements in this file; also 'create view'
--- statements if you choose to use it.
---
--- You can write comments in this file by starting them with two dashes, like
--- these lines here.
+-- Table definitions for the tournament project. 
+-- 
+-- Put your SQL 'create table' statements in this file; also 'create view' 
+-- statements if you choose to use it. 
+-- 
+-- You can write comments in this file by starting them with two dashes, like 
+-- these lines here. 
+-- First making sure that we are getting new tables every time by deleting  
+-- existing ones 
+DROP TABLE IF EXISTS players CASCADE; 
 
--- First making sure that we are getting new tables every time by deleting 
--- existing ones
-drop table if exists players cascade;
-drop table if exists matches cascade;
+DROP TABLE IF EXISTS matches CASCADE; 
 
--- Then we create the two tables that will be used 
-create table players (player_id serial primary key, name text);
-create table matches (match_id serial primary key, player_one_id integer references players(player_id), 
-	player_two_id integer references players(player_id), match_winner integer references players(player_id));
+-- Then we create the two tables that will be used  
+CREATE TABLE players 
+  ( 
+     player_id SERIAL PRIMARY KEY, 
+     name      TEXT 
+  ); 
 
--- Finally, we create all the views that will be used in the queries
--- stored in tournament.py
-create view wins as 
-	select players.player_id as winner, count(matches.match_winner) as wins
-	from players left join matches
-	on players.player_id = matches.match_winner
-	group by players.player_id;
+CREATE TABLE matches 
+  ( 
+     match_id      SERIAL PRIMARY KEY, 
+     player_one_id INTEGER REFERENCES players(player_id), 
+     player_two_id INTEGER REFERENCES players(player_id), 
+     match_winner  INTEGER REFERENCES players(player_id) 
+  ); 
 
-create view player_one_matches as 
-	select players.player_id, count(matches.player_one_id) as count
-	from players left join matches
-	on players.player_id = matches.player_one_id
-	group by players.player_id;
+-- Finally, we create all the views that will be used in the queries 
+-- stored in tournament.py 
+CREATE view wins 
+AS 
+  SELECT players.player_id           AS winner, 
+         Count(matches.match_winner) AS wins 
+  FROM   players 
+         LEFT JOIN matches 
+                ON players.player_id = matches.match_winner 
+  GROUP  BY players.player_id; 
 
-create view player_two_matches as
-	select players.player_id, count(matches.player_two_id) as count
-	from players left join matches
-	on players.player_id = matches.player_two_id
-	group by players.player_id;
+CREATE view player_one_matches 
+AS 
+  SELECT players.player_id, 
+         Count(matches.player_one_id) AS count 
+  FROM   players 
+         LEFT JOIN matches 
+                ON players.player_id = matches.player_one_id 
+  GROUP  BY players.player_id; 
 
-create view played_matches as
-	select players.player_id as player, player_one_matches.count + player_two_matches.count as matches
-	from players 
-	left join player_one_matches
-	on players.player_id = player_one_matches.player_id
-	left join player_two_matches
-	on players.player_id = player_two_matches.player_id;
+CREATE view player_two_matches 
+AS 
+  SELECT players.player_id, 
+         Count(matches.player_two_id) AS count 
+  FROM   players 
+         LEFT JOIN matches 
+                ON players.player_id = matches.player_two_id 
+  GROUP  BY players.player_id; 
 
-create view standings as
-	select players.player_id, players.name, wins.wins, played_matches.matches
-	from players 
-	left join wins
-	on players.player_id = wins.winner
-	left join played_matches
-	on players.player_id = played_matches.player
-	order by wins.wins desc;
+CREATE view played_matches 
+AS 
+  SELECT players.player_id          AS player, 
+         player_one_matches.count 
+         + player_two_matches.count AS matches 
+  FROM   players 
+         LEFT JOIN player_one_matches 
+                ON players.player_id = player_one_matches.player_id 
+         LEFT JOIN player_two_matches 
+                ON players.player_id = player_two_matches.player_id; 
+
+CREATE view standings 
+AS 
+  SELECT players.player_id, 
+         players.name, 
+         wins.wins, 
+         played_matches.matches 
+  FROM   players 
+         LEFT JOIN wins 
+                ON players.player_id = wins.winner 
+         LEFT JOIN played_matches 
+                ON players.player_id = played_matches.player 
+  ORDER  BY wins.wins DESC; 
