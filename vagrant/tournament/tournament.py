@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
@@ -33,7 +33,7 @@ def countPlayers():
     """Returns the number of players currently registered."""
     conn = connect()
     cur = conn.cursor()
-    cur.execute ("select count(*) from players;")
+    cur.execute("select count(*) from players;")
     query_result = cur.fetchall()
     answer = query_result[0][0]
     conn.close()
@@ -42,16 +42,16 @@ def countPlayers():
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
-  
+
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
-  
+
     Args:
       name: the player's full name (need not be unique).
     """
     conn = connect()
     cur = conn.cursor()
-    cur.execute ("INSERT INTO players (name) VALUES (%s);", (name,))
+    cur.execute("INSERT INTO players (name) VALUES (%s);", (name,))
     conn.commit()
     conn.close()
 
@@ -59,8 +59,8 @@ def registerPlayer(name):
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place, or a 
+    player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -86,19 +86,25 @@ def reportMatch(winner, loser):
     """
     conn = connect()
     cur = conn.cursor()
-    cur.execute("INSERT INTO matches (player_one_id, player_two_id, match_winner) VALUES (%s, %s, %s);",(winner, loser, winner,))
+    cur.execute(
+        "INSERT INTO matches (player_one_id, player_two_id, match_winner) " +
+        "VALUES (%s, %s, %s);",
+        (winner,
+         loser,
+         winner,
+         ))
     conn.commit()
     conn.close()
- 
- 
+
+
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
-  
+
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
-    player with an equal or nearly-equal win record, that is, a player adjacent
-    to him or her in the standings.
-  
+    player with an equal or nearly-equal win record, that is, a player 
+    adjacent to him or her in the standings.
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -116,14 +122,15 @@ def swissPairings():
     offset_value = 0
     matches_list = []
     while current_match <= num_matches:
-        query_result = cur.execute("select player_id, name from standings limit 2 offset (%s);",(offset_value,))
+        query_result = cur.execute(
+            "select player_id, name from standings limit 2 offset (%s);", 
+            (offset_value,))
         temp_result_two_tuples = cur.fetchall()
-        temp_result_one_tuple = temp_result_two_tuples[0] + temp_result_two_tuples[1]
+        temp_result_one_tuple = temp_result_two_tuples[
+            0] + temp_result_two_tuples[1]
         matches_list.append(temp_result_one_tuple)
         current_match += 1
         offset_value += 2
     conn.close()
 
     return matches_list
-
-
